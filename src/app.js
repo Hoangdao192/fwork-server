@@ -47,6 +47,9 @@ ref.on('child_changed', (childSnapshot, prevChildKey) => {
     })
 })
 
+app.get("/", (req, res) => {
+    res.send("Server is running.")
+})
 app.listen(port, () => { });
 
 
