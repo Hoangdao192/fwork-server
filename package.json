@@ -7,12 +7,16 @@
   },
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node src/app.js",
     "test": "node test.js"
   },
   "dependencies": {
     "ejs": "^3.1.5",
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "algoliasearch": "^4.14.2",
+    "express-session": "^1.17.3",
+    "firebase": "^9.13.0",
+    "firebase-admin": "^11.2.0"
   },
   "devDependencies": {
     "got": "^11.3.0",
