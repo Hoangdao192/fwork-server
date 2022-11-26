@@ -21,8 +21,9 @@ admin.initializeApp({
     measurementId: "G-D4ZRS8TCGB"
 });
 
-import express from 'express';;
+import express from 'express';
 import mainController from './controllers/MainController.js';
+import notificationController from './controllers/NotificationController.js';
 import expressSession from 'express-session';
 
 const app = express();
@@ -69,11 +70,66 @@ function sendCloudMessage(registrationTokens, data) {
         });
 }
 
-//  Gửi thông báo đến người dùng khi có tin nhắn đến
+function sendCloudMessagePromise(registrationTokens, data) {
+    return new Promise((resolve, reject) => {
+        const message = {
+            data: data,
+            tokens: registrationTokens,
+          };
+          
+          admin.messaging().sendMulticast(message)
+            .then((response) => {
+              console.log(response.successCount + ' messages were sent successfully');
+              resolve(response);
+            });
+    })
+}
+
 let userChatMessageRef = firebaseDatabase.ref("chats/messages");
 let userChatRef = firebaseDatabase.ref("chats/list");
 let userDeviceRef = firebaseDatabase.ref("userDevices");
 let userRef = firebaseDatabase.ref("users");
+let postRef = firebaseDatabase.ref("posts/list");
+let postCommentRef = firebaseDatabase.ref("posts/comments");
+let postReactionRef = firebaseDatabase.ref("posts/reactions");
+
+function getPostData(postId) {
+    console.log(postId);
+    return new Promise((resolve, reject) => {
+        postRef
+            .child(postId)
+            .get().then((postSnapshot) => {
+                console.log(postSnapshot.val());
+                resolve(postSnapshot.val());
+            })
+    })
+}
+
+function getUserData(userId) {
+    return new Promise((resolve, reject) => {
+        userRef
+            .child(userId)
+            .get().then((userSnapshot) => {
+                resolve(userSnapshot.val());
+            })
+    });
+}
+
+function getUserDeviceToken(userId) {
+    return new Promise((resolve, reject) => {
+        userDeviceRef
+        .child(userId)
+        .child("deviceMessageToken")
+            .get()
+            .then((tokenSnapshot) => {
+                if (tokenSnapshot.exists()) {
+                    resolve(tokenSnapshot.val());
+                }
+            })
+    })
+}
+
+//  Gửi thông báo đến người dùng khi có tin nhắn đến
 userChatMessageRef.on('child_changed', (childSnapshot, prevChildKey) => {
     let chanelId = childSnapshot.key;
     userChatMessageRef.child(chanelId).orderByChild("sentTime")
@@ -119,6 +175,60 @@ userChatMessageRef.on('child_changed', (childSnapshot, prevChildKey) => {
 app.get("/", (req, res) => {
     res.send("Server is running.")
 })
+
+app.post("/post/reaction/notify", (req, res) => {
+    console.log(req.body);
+    let postId = req.body.postId;
+    let userId = req.body.userId;
+    console.log(postId);
+    console.log(userId);
+    getPostData(postId).then((postData) => {
+        console.log(postData);
+        return getUserData(postData.userId);
+    }).then((postOwnerUserData) => {
+        return getUserDeviceToken(postOwnerUserData.id);
+    }).then((token) => {
+        getUserData(userId).then((userData) => {
+            sendCloudMessagePromise([token], {
+                title: `Lượt thích mới`,
+                messageContent: `${userData.fullName} đã thích bài viết của bạn`
+            }).then((response) => {
+                let result = {
+                    status: 200,
+                    sent: response.successCount
+                }
+                res.send(JSON.stringify(result));
+            })
+        })
+    })
+});
+
+app.post("/post/comment/notify", (req, res) => {
+    console.log(req.body);
+    let postId = req.body.postId;
+    let userId = req.body.userId;
+    console.log(postId);
+    console.log(userId);
+    getPostData(postId).then((postData) => {
+        console.log(postData);
+        return getUserData(postData.userId);
+    }).then((postOwnerUserData) => {
+        return getUserDeviceToken(postOwnerUserData.id);
+    }).then((token) => {
+        getUserData(userId).then((userData) => {
+            sendCloudMessagePromise([token], {
+                title: `Bình luận mới`,
+                messageContent: `${userData.fullName} đã bình luận bài viết của bạn`
+            }).then((response) => {
+                let result = {
+                    status: 200,
+                    sent: response.successCount
+                }
+                res.send(JSON.stringify(result));
+            })
+        })
+    })
+});
 app.listen(port, () => { });
 
 
