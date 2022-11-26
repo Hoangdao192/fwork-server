@@ -93,6 +93,25 @@ let postRef = firebaseDatabase.ref("posts/list");
 let postCommentRef = firebaseDatabase.ref("posts/comments");
 let postReactionRef = firebaseDatabase.ref("posts/reactions");
 
+function getChatChanelData(chanelId) {
+    return new Promise((resolve, reject) => {
+        userChatRef.child(chanelId)
+            .get().then((chanelSnapshot) => {
+                resolve(chanelSnapshot.val());
+            })
+    })
+}
+
+function getMessageData(chanelId, messageId) {
+    console.log("Message: " + messageId);
+    return new Promise((resolve, reject) => {
+        userChatMessageRef.child(chanelId).child(messageId)
+            .get().then((messageSnapshot) => {
+                resolve(messageSnapshot.val());
+            })
+    })
+}
+
 function getPostData(postId) {
     console.log(postId);
     return new Promise((resolve, reject) => {
@@ -129,51 +148,46 @@ function getUserDeviceToken(userId) {
     })
 }
 
-//  Gửi thông báo đến người dùng khi có tin nhắn đến
-userChatMessageRef.on('child_changed', (childSnapshot, prevChildKey) => {
-    let chanelId = childSnapshot.key;
-    userChatMessageRef.child(chanelId).orderByChild("sentTime")
-        .limitToLast(1).get()
-        .then((messageSnapshot) => {
-            //  Lấy message
-            messageSnapshot.forEach((snapshot1) => {
-                let sender = snapshot1.val().senderId;
-                //  Lấy thông tin người gửi
-                userRef.child(sender).get()
-                    .then((userSnapshot) => {
-                        console.log(userSnapshot.val())
-                        //  Lấy id người nhận
-                        userChatRef.child(chanelId).child("members")
-                        .get()
-                        .then((snapshot2) => {
-                            snapshot2.val().forEach((memberId) => {
-                                if (memberId != sender) {
-                                    //  Lấy token của thiết bị nhận thông báo
-                                    userDeviceRef.child(memberId).child("deviceMessageToken")
-                                        .get()
-                                        .then((tokenSnapshot) => {
-                                            if (tokenSnapshot.exists()) {
-                                                
-                                                console.log(tokenSnapshot.val())
-                                                //  Gửi thông báo
-                                                sendCloudMessage([tokenSnapshot.val()], {
-                                                    title: `Tin nhắn từ ${userSnapshot.val().fullName}`,
-                                                    messageType: snapshot1.val().type,
-                                                    messageContent: snapshot1.val().content,
-                                                    chanelId: chanelId
-                                                })
-                                            }
-                                        })
-                                }
-                            })
-                        })
-                    })
-            })
-        })
-})
-
 app.get("/", (req, res) => {
     res.send("Server is running.")
+})
+
+app.post('/message/notify', (req, res) => {
+    console.log(req.body);
+    let messageId = req.body.messageId;
+    let chanelId = req.body.chanelId;
+    console.log(messageId);
+    getChatChanelData(chanelId)
+    .then(chanelData => {
+        getMessageData(chanelId, messageId)
+        .then(messageData => {
+            let senderId = messageData.senderId;
+            let chatMemberIds = chanelData.members;
+
+            getUserData(senderId)
+            .then((userData) => {
+                for (let uid of chatMemberIds) {
+                    if (uid != senderId) {
+                        getUserDeviceToken(uid)
+                        .then((token) => {
+                            sendCloudMessagePromise([token], {
+                                title: `Tin nhắn từ ${userData.fullName}`,
+                                messageType: messageData.type,
+                                messageContent: messageData.content,
+                                chanelId: chanelId
+                            }).then((response) => {
+                                let result = {
+                                    status: 200,
+                                    sent: response.successCount
+                                }
+                                res.send(JSON.stringify(result));
+                            })
+                        })
+                    }
+                }
+            })
+        })
+    })
 })
 
 app.post("/post/reaction/notify", (req, res) => {
