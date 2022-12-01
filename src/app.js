@@ -243,6 +243,34 @@ app.post("/post/comment/notify", (req, res) => {
         })
     })
 });
+
+app.post("/post/apply/notify", (req, res) => {
+    let postId = req.body.postId;
+    let userId = req.body.userId;
+    console.log("Post apply notify");
+    console.log(postId);
+    console.log(userId);
+    getPostData(postId).then((postData) => {
+        console.log(postData);
+        return getUserData(postData.userId);
+    }).then((postOwnerUserData) => {
+        return getUserDeviceToken(postOwnerUserData.id);
+    }).then((token) => {
+        getUserData(userId).then((userData) => {
+            sendCloudMessagePromise([token], {
+                title: `Đơn ứng tuyển`,
+                messageContent: `${userData.fullName} đã ứng tuyển bài viết của bạn`
+            }).then((response) => {
+                let result = {
+                    status: 200,
+                    sent: response.successCount
+                }
+                res.send(JSON.stringify(result));
+            })
+        })
+    })
+})
+
 app.listen(port, () => { });
 
 
