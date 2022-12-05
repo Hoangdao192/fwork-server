@@ -271,6 +271,10 @@ app.post("/post/apply/notify", (req, res) => {
     })
 })
 
+app.get("/", (req, res) => {
+    res.send("FWORK SERVER");
+})
+
 app.listen(port, () => { });
 
 
