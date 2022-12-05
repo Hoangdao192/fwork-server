@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import serviceAccount from "./firebase-service-account-file.js"
+import serviceAccount from "./src/firebase-service-account-file.js"
 import algoliaSearch from 'algoliasearch';
 
 import { initializeApp } from 'firebase/app';
@@ -22,8 +22,8 @@ admin.initializeApp({
 });
 
 import express from 'express';
-import mainController from './controllers/MainController.js';
-import notificationController from './controllers/NotificationController.js';
+import mainController from './src/controllers/MainController.js';
+import notificationController from './src/controllers/NotificationController.js';
 import expressSession from 'express-session';
 
 const app = express();
