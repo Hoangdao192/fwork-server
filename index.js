@@ -216,26 +216,27 @@ app.post("/post/reaction/notify", (req, res) => {
         console.log(postData);
         return getUserData(postData.userId);
     }).then((postOwnerUserData) => {
-        return getUserDeviceToken(postOwnerUserData.id);
-    }).then((token) => {
-        getUserData(userId).then((userData) => {
-            sendCloudMessagePromise([token], {
-                title: `Lượt thích mới`,
-                messageContent: `${userData.fullName} đã thích bài viết của bạn`
-            }).then((response) => {
-                insertNotification(postOwnerUserData.id, {
-                    title: `Lượt thích mới`,
-                    type: "Post reaction notify",
-                    content: `${userData.fullName} đã thích bài viết của bạn`
+        getUserDeviceToken(postOwnerUserData.id)
+            .then((token) => {
+                getUserData(userId).then((userData) => {
+                    sendCloudMessagePromise([token], {
+                        title: `Lượt thích mới`,
+                        messageContent: `${userData.fullName} đã thích bài viết của bạn`
+                    }).then((response) => {
+                        insertNotification(postOwnerUserData.id, {
+                            title: `Lượt thích mới`,
+                            type: "Post reaction notify",
+                            content: `${userData.fullName} đã thích bài viết của bạn`
+                        })
+        
+                        let result = {
+                            status: 200,
+                            sent: response.successCount
+                        }
+                        res.send(JSON.stringify(result));
+                    })
                 })
-
-                let result = {
-                    status: 200,
-                    sent: response.successCount
-                }
-                res.send(JSON.stringify(result));
             })
-        })
     })
 });
 
@@ -249,26 +250,27 @@ app.post("/post/comment/notify", (req, res) => {
         console.log(postData);
         return getUserData(postData.userId);
     }).then((postOwnerUserData) => {
-        return getUserDeviceToken(postOwnerUserData.id);
-    }).then((token) => {
-        getUserData(userId).then((userData) => {
-            sendCloudMessagePromise([token], {
-                title: `Bình luận mới`,
-                messageContent: `${userData.fullName} đã bình luận bài viết của bạn`
-            }).then((response) => {
-                insertNotification(postOwnerUserData.id, {
-                    title: `Bình luận mới`,
-                    type: "Post comment notify",
-                    content: `${userData.fullName} đã bình luận bài viết của bạn`
+        getUserDeviceToken(postOwnerUserData.id)
+            .then((token) => {
+                getUserData(userId).then((userData) => {
+                    sendCloudMessagePromise([token], {
+                        title: `Bình luận mới`,
+                        messageContent: `${userData.fullName} đã bình luận bài viết của bạn`
+                    }).then((response) => {
+                        insertNotification(postOwnerUserData.id, {
+                            title: `Bình luận mới`,
+                            type: "Post comment notify",
+                            content: `${userData.fullName} đã bình luận bài viết của bạn`
+                        })
+        
+                        let result = {
+                            status: 200,
+                            sent: response.successCount
+                        }
+                        res.send(JSON.stringify(result));
+                    })
                 })
-
-                let result = {
-                    status: 200,
-                    sent: response.successCount
-                }
-                res.send(JSON.stringify(result));
             })
-        })
     })
 });
 
@@ -282,26 +284,27 @@ app.post("/post/apply/notify", (req, res) => {
         console.log(postData);
         return getUserData(postData.userId);
     }).then((postOwnerUserData) => {
-        return getUserDeviceToken(postOwnerUserData.id);
-    }).then((token) => {
-        getUserData(userId).then((userData) => {
-            sendCloudMessagePromise([token], {
-                title: `Đơn ứng tuyển`,
-                messageContent: `${userData.fullName} đã ứng tuyển công việc của bạn`
-            }).then((response) => {
-                insertNotification(postOwnerUserData.id, {
-                    title: `Đơn ứng tuyển`,
-                    type: "Post apply notify",
-                    content: `${userData.fullName} đã ứng tuyển công việc của bạn`
+        getUserDeviceToken(postOwnerUserData.id)
+            .then((token) => {
+                getUserData(userId).then((userData) => {
+                    sendCloudMessagePromise([token], {
+                        title: `Đơn ứng tuyển`,
+                        messageContent: `${userData.fullName} đã ứng tuyển công việc của bạn`
+                    }).then((response) => {
+                        insertNotification(postOwnerUserData.id, {
+                            title: `Đơn ứng tuyển`,
+                            type: "Post apply notify",
+                            content: `${userData.fullName} đã ứng tuyển công việc của bạn`
+                        })
+        
+                        let result = {
+                            status: 200,
+                            sent: response.successCount
+                        }
+                        res.send(JSON.stringify(result));
+                    })
                 })
-
-                let result = {
-                    status: 200,
-                    sent: response.successCount
-                }
-                res.send(JSON.stringify(result));
             })
-        })
     })
 })
 
@@ -315,7 +318,7 @@ app.post("/post/accept/notify", (req, res) => {
                     title: "Đơn ứng tuyển được chấp nhận",
                     messageContent: `Đơn ứng tuyển cho công việc ${postData.postName} được chấp nhận`
                 }).then((response) => {
-                    insertNotification(postOwnerUserData.id, {
+                    insertNotification(userId, {
                         title: "Đơn ứng tuyển được chấp nhận",
                         type: "Post apply notify",
                         content: `Đơn ứng tuyển cho công việc ${postData.postName} được chấp nhận`
@@ -341,7 +344,7 @@ app.post("/post/reject/notify", (req, res) => {
                     title: "Đơn ứng tuyển bị từ chối",
                     messageContent: `Đơn ứng tuyển cho công việc ${postData.postName} bị từ chối`
                 }).then((response) => {
-                    insertNotification(postOwnerUserData.id, {
+                    insertNotification(userId, {
                         title: "Đơn ứng tuyển bị từ chối",
                         type: "Post apply notify",
                         content: `Đơn ứng tuyển cho công việc ${postData.postName} bị từ chối`
