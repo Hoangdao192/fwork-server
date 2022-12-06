@@ -160,7 +160,7 @@ function insertNotification(userId, notification) {
 }
 
 app.get("/", (req, res) => {
-    res.send("Server is running.")
+    res.send("Server fwork is running.")
 })
 
 app.post('/message/notify', (req, res) => {
