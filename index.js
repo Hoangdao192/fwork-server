@@ -155,7 +155,9 @@ function insertNotification(userId, notification) {
         notifyId: newRef.key,
         title: notification.title,
         content: notification.content,
-        type: notification.type
+        type: notification.type,
+        senderId: notification.senderId,
+        sentTime: Date.now() / 1000
     })
 }
 
@@ -226,7 +228,8 @@ app.post("/post/reaction/notify", (req, res) => {
                         insertNotification(postOwnerUserData.id, {
                             title: `Lượt thích mới`,
                             type: "Post reaction notify",
-                            content: `${userData.fullName} đã thích bài viết của bạn`
+                            content: `${userData.fullName} đã thích bài viết của bạn`,
+                            senderId: userData.id
                         })
         
                         let result = {
@@ -260,7 +263,8 @@ app.post("/post/comment/notify", (req, res) => {
                         insertNotification(postOwnerUserData.id, {
                             title: `Bình luận mới`,
                             type: "Post comment notify",
-                            content: `${userData.fullName} đã bình luận bài viết của bạn`
+                            content: `${userData.fullName} đã bình luận bài viết của bạn`,
+                            senderId: userData.id
                         })
         
                         let result = {
@@ -294,7 +298,8 @@ app.post("/post/apply/notify", (req, res) => {
                         insertNotification(postOwnerUserData.id, {
                             title: `Đơn ứng tuyển`,
                             type: "Post apply notify",
-                            content: `${userData.fullName} đã ứng tuyển công việc của bạn`
+                            content: `${userData.fullName} đã ứng tuyển công việc của bạn`,
+                            senderId: userData.id
                         })
         
                         let result = {
@@ -321,7 +326,8 @@ app.post("/post/accept/notify", (req, res) => {
                     insertNotification(userId, {
                         title: "Đơn ứng tuyển được chấp nhận",
                         type: "Post apply notify",
-                        content: `Đơn ứng tuyển cho công việc ${postData.postName} được chấp nhận`
+                        content: `Đơn ứng tuyển cho công việc ${postData.postName} được chấp nhận`,
+                        senderId: postData.userId
                     })
     
                     let result = {
@@ -347,7 +353,8 @@ app.post("/post/reject/notify", (req, res) => {
                     insertNotification(userId, {
                         title: "Đơn ứng tuyển bị từ chối",
                         type: "Post apply notify",
-                        content: `Đơn ứng tuyển cho công việc ${postData.postName} bị từ chối`
+                        content: `Đơn ứng tuyển cho công việc ${postData.postName} bị từ chối`,
+                        senderId: postData.userId
                     })
     
                     let result = {
