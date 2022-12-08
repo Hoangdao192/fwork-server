@@ -192,7 +192,8 @@ app.post('/message/notify', (req, res) => {
                                 insertNotification(uid, {
                                     title: `Tin nhắn từ ${userData.fullName}`,
                                     type: "Chat notify",
-                                    content: messageData.content
+                                    content: messageData.content,
+                                    senderId: senderId
                                 })
                                 let result = {
                                     status: 200,
