@@ -165,6 +165,33 @@ app.get("/", (req, res) => {
     res.send("Server fwork is running.")
 })
 
+app.post('/user/create/notify', (req, res) => {
+    console.log(req.body);
+    let userId = req.body.userId;
+
+    userRef.child(userId).get()
+        .then((snapshot) => {
+            let user = snapshot.val();
+            user.objectID = user.id;
+            index.saveObject(user, (err, content) => {
+                res.status(200).send(content());
+            })
+        })
+})
+
+app.post('/user/update/notify', (req, res) => {
+    console.log(req.body);
+    let userId = req.body.userId;
+    userRef.child(userId).get()
+        .then((snapshot) => {
+            let user = snapshot.val();
+            user.objectID = user.id;
+            index.saveObject(user, (err, content) => {
+                res.status(200).send(content());
+            })
+        })
+})
+
 app.post('/message/notify', (req, res) => {
     console.log(req.body);
     let messageId = req.body.messageId;
